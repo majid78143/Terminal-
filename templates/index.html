@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
 <title>LiveHTML Pro - Flask Edition</title>
 
 <!-- CodeMirror (CDN se, koi build step nahi chahiye) -->
@@ -24,10 +24,12 @@
       </div>
     </div>
 
-    <div class="toolbar">
+    <button id="btnMenu" class="btn icon-btn menu-toggle" title="Menu" data-testid="button-menu">☰</button>
+
+    <div class="toolbar" id="toolbar">
       <input type="file" id="fileInput" accept=".html,.htm" hidden>
-      <button id="btnUpload" class="btn" data-testid="button-upload">⬆ Upload</button>
-      <button id="btnWrite" class="btn btn-accent" data-testid="button-write">✎ Write</button>
+      <button id="btnUpload" class="btn" data-testid="button-upload"><span class="ic">⬆</span><span class="lbl">Upload</span></button>
+      <button id="btnWrite" class="btn btn-accent" data-testid="button-write"><span class="ic">✎</span><span class="lbl">Write</span></button>
       <button id="btnRun" class="btn icon-btn" title="Run" data-testid="button-run">▶</button>
       <button id="btnCopy" class="btn icon-btn" title="Copy" data-testid="button-copy">⧉</button>
       <button id="btnDownload" class="btn icon-btn" title="Download" data-testid="button-download">⬇</button>
@@ -36,9 +38,10 @@
     </div>
   </header>
 
-  <!-- ===== TABS (Code / Console) ===== -->
+  <!-- ===== TABS (Code / Preview / Console) ===== -->
   <nav class="tabbar">
-    <button class="tab active" data-tab="code" data-testid="tab-code">Code + Preview</button>
+    <button class="tab active" data-tab="code" data-testid="tab-code">Code</button>
+    <button class="tab" data-tab="preview" data-testid="tab-preview">Preview</button>
     <button class="tab" data-tab="console" data-testid="tab-console">Console</button>
     <span class="status-dot" id="liveDot" data-testid="status-live">● Live</span>
   </nav>
@@ -46,7 +49,7 @@
   <!-- ===== MAIN AREA ===== -->
   <main class="main">
 
-    <!-- Code + Preview panel (ye "Code" tab ke andar hai, but preview hamesha saath dikhega) -->
+    <!-- Code + Preview panel: desktop par side-by-side, mobile par sub-tab se switch hota hai -->
     <section id="panel-code" class="panel active split">
       <div class="pane editor-pane" id="dropZone" data-testid="panel-editor">
         <div class="pane-header">
@@ -63,7 +66,7 @@
         </div>
       </div>
 
-      <div class="pane preview-pane" data-testid="panel-preview">
+      <div class="pane preview-pane" id="previewPane" data-testid="panel-preview">
         <div class="pane-header browser-chrome">
           <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
           <div class="fake-url">localhost:5000/preview</div>
@@ -90,9 +93,9 @@
   <footer class="statusbar">
     <span id="statCursor" data-testid="text-cursor">Ln 1, Col 1</span>
     <span id="statChars" data-testid="text-chars">0 Chars</span>
-    <span id="statWords" data-testid="text-words">0 Words</span>
-    <span id="statLines" data-testid="text-lines">0 Lines</span>
-    <span>UTF-8</span>
+    <span id="statWords" class="hide-xs" data-testid="text-words">0 Words</span>
+    <span id="statLines" class="hide-xs" data-testid="text-lines">0 Lines</span>
+    <span class="hide-xs">UTF-8</span>
     <span id="statReady" class="ready" data-testid="text-status">● Ready</span>
   </footer>
 

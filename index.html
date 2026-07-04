@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0c14" />
+<title>LiveHTML Pro - Flask Edition</title>
+
+<!-- CodeMirror (CDN se, koi build step nahi chahiye) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">&lt;/&gt;</span>
+      <div>
+        <div class="brand-title">LiveHTML Pro</div>
+        <div class="brand-sub">Flask Edition</div>
+      </div>
+    </div>
+
+    <button id="btnMenu" class="btn icon-btn menu-toggle" title="Menu" data-testid="button-menu">☰</button>
+
+    <div class="toolbar" id="toolbar">
+      <input type="file" id="fileInput" accept=".html,.htm" hidden>
+      <button id="btnUpload" class="btn" data-testid="button-upload"><span class="ic">⬆</span><span class="lbl">Upload</span></button>
+      <button id="btnWrite" class="btn btn-accent" data-testid="button-write"><span class="ic">✎</span><span class="lbl">Write</span></button>
+      <button id="btnRun" class="btn icon-btn" title="Run" data-testid="button-run">▶</button>
+      <button id="btnCopy" class="btn icon-btn" title="Copy" data-testid="button-copy">⧉</button>
+      <button id="btnDownload" class="btn icon-btn" title="Download" data-testid="button-download">⬇</button>
+      <button id="btnFullscreen" class="btn icon-btn" title="Fullscreen" data-testid="button-fullscreen">⛶</button>
+      <button id="btnRefresh" class="btn icon-btn" title="Refresh Preview" data-testid="button-refresh">⟳</button>
+    </div>
+  </header>
+
+  <!-- ===== TABS (Code / Preview / Console) ===== -->
+  <nav class="tabbar">
+    <button class="tab active" data-tab="code" data-testid="tab-code">Code</button>
+    <button class="tab" data-tab="preview" data-testid="tab-preview">Preview</button>
+    <button class="tab" data-tab="console" data-testid="tab-console">Console</button>
+    <span class="status-dot" id="liveDot" data-testid="status-live">● Live</span>
+  </nav>
+
+  <!-- ===== MAIN AREA ===== -->
+  <main class="main">
+
+    <!-- Code + Preview panel: desktop par side-by-side, mobile par sub-tab se switch hota hai -->
+    <section id="panel-code" class="panel active split">
+      <div class="pane editor-pane" id="dropZone" data-testid="panel-editor">
+        <div class="pane-header">
+          <span>index.html</span>
+        </div>
+        <div id="editorHost" class="editor-host"></div>
+
+        <!-- Empty state jab tak file upload na ho -->
+        <div id="emptyState" class="empty-state">
+          <div class="empty-icon">&lt;/&gt;</div>
+          <h2>LiveHTML Pro me swagat hai</h2>
+          <p>HTML file yahan drag-drop karein ya "Upload" button dabayein.</p>
+          <button class="btn btn-accent" id="btnUploadCenter" data-testid="button-upload-center">⬆ Upload File</button>
+        </div>
+      </div>
+
+      <div class="pane preview-pane" id="previewPane" data-testid="panel-preview">
+        <div class="pane-header browser-chrome">
+          <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          <div class="fake-url">localhost:5000/preview</div>
+          <button id="btnExitZoom" class="btn small exit-zoom-btn hidden" data-testid="button-exit-zoom">✕ Close Zoom</button>
+        </div>
+        <iframe id="previewFrame" class="preview-frame" sandbox="allow-scripts" data-testid="iframe-preview"></iframe>
+      </div>
+    </section>
+
+    <!-- Console panel (alag tab) -->
+    <section id="panel-console" class="panel">
+      <div class="console-header">
+        <span>Console</span>
+        <button id="btnClearConsole" class="btn small" data-testid="button-clear-console">Clear</button>
+      </div>
+      <div id="consoleLog" class="console-log" data-testid="text-console-log"></div>
+    </section>
+
+  </main>
+
+  <!-- ===== YOUTUBE SUBSCRIBE POPUP (bar-bar dikhta hai) ===== -->
+  <div id="ytPopup" class="yt-popup hidden" data-testid="popup-subscribe">
+    <button id="ytPopupClose" class="yt-popup-close" data-testid="button-close-popup">✕</button>
+    <img src="{{ url_for('static', filename='img/youtube-logo.png') }}" alt="YouTube Channel" class="yt-popup-logo" data-testid="img-youtube-logo">
+    <div class="yt-popup-text">
+      <div class="yt-popup-title">HTML For C</div>
+      <div class="yt-popup-sub">Naye web dev tutorials ke liye channel subscribe karein</div>
+    </div>
+    <a href="https://youtube.com/@htmlforc01?si=_5-IZYXxoELPJw_P" target="_blank" rel="noopener noreferrer" class="yt-subscribe-btn" id="ytSubscribeBtn" data-testid="link-subscribe">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+        <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/>
+      </svg>
+      Subscribe
+    </a>
+  </div>
+
+  <!-- ===== WRITE EXPLANATION BANNER ===== -->
+  <div id="writeBanner" class="write-banner hidden" data-testid="banner-write"></div>
+
+  <!-- ===== TYPING MODE BAR (real keyboard se typing) ===== -->
+  <div id="typingModeBar" class="typing-mode-bar hidden" data-testid="banner-typing-mode">
+    <span class="typing-mode-label">Typing Mode: apne keyboard se type karein</span>
+    <span id="typingProgress" class="typing-progress" data-testid="text-typing-progress">0 / 0</span>
+    <button id="btnStopTyping" class="btn small" data-testid="button-stop-typing">Stop</button>
+  </div>
+
+  <!-- Chhupa hua real input - isko focus karne se mobile/desktop ka asli keyboard khulta hai -->
+  <input type="text" id="typeCapture" class="type-capture" autocomplete="off" autocapitalize="off"
+         autocorrect="off" spellcheck="false" aria-hidden="true" tabindex="-1" data-testid="input-type-capture">
+
+  <!-- ===== STATUS BAR ===== -->
+  <footer class="statusbar">
+    <span id="statCursor" data-testid="text-cursor">Ln 1, Col 1</span>
+    <span id="statChars" data-testid="text-chars">0 Chars</span>
+    <span id="statWords" class="hide-xs" data-testid="text-words">0 Words</span>
+    <span id="statLines" class="hide-xs" data-testid="text-lines">0 Lines</span>
+    <span class="hide-xs">UTF-8</span>
+    <span id="statReady" class="ready" data-testid="text-status">● Ready</span>
+  </footer>
+
+  <!-- CodeMirror scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/search.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/dialog/dialog.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
